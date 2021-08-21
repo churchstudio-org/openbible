@@ -6,6 +6,26 @@ Easy to use public domain Bible sources available on JSON format.
 
 The Bible versions are organized by their languages inside `<language-code>/` directories.
 
+## NLP Files
+
+Some JSON files have special prefixes like `tokens` and `clean` that are destined for natural language processing purposes.
+
+### tokens
+
+Each verse was tokenized using the bible-dl tool.
+
+```sh
+bible-dl tokenize bible.json en # Outputs bible.tokens.json
+```
+
+### clean
+
+All stopwords from each verse were removed using the bible-dl tool.
+
+```sh
+bible-dl clean bible.json pt # Outputs bible.clean.json
+```
+
 ## Data Collection
 
 Each Bible was collected using open source tools created for this purpose.
