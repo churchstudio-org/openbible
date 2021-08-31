@@ -46,5 +46,4 @@ A CLI to download bible from websites.
 |------------|-------|---------|--------------------------|--------------------------------------------|-------------------------------------------------------|
 | English    | en_US | KJV     | King James Version       | https://just1word.com/                     | ©2009 Just1Word, Inc. All rights reserved.            |
 | Japanese   | ja_JP | KOU     | コウゴ - 屋久島          | https://just1word.com/                     | ©2009 Just1Word, Inc. All rights reserved.            |
-| Korean     | ko_KR | KOR     | 한국어 성경 Korean Bible | https://just1word.com/                     | ©2009 Just1Word, Inc. All rights reserved.            |
 | Portuguese | pt_BR | BLIVRE  | Bíblia Livre             | https://sites.google.com/site/biblialivre/ | Copyright © Diego Santos, Mario Sérgio, e Marco Teles |
