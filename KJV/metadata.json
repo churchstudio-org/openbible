@@ -1,0 +1,6 @@
+{
+  "attribution": "The text of the King James Version (KJV) of the Bible is in the public domain. First published in 1611.",
+  "locale": "en",
+  "source": ["MT", "TR", "LXX", "Vg", "Targum", "Peshitta"],
+  "version": "KJV"
+}
