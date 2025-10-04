@@ -12,16 +12,17 @@ RPM_LIMIT = 500
 TOKENS_PER_REQUEST = 2000
 
 class OpenAITranslator(BaseTranslator):
-    def __init__(self, model_name):
+    def __init__(self, model_name, prompt):
         self.model_name = model_name
+        self.prompt = prompt
 
     def _translate_batch(self, verses):
-        prompt = "\n".join(verses)
+        prompt = self.prompt + "\n\n" + "\n".join(verses)
         response = openai.ChatCompletion.create(
             model=self.model_name,
             messages=[
                 {"role": "system", "content": "You are a professional translator."},
-                {"role": "user", "content": f"Translate the following text:\n{prompt}"}
+                {"role": "user", "content": prompt}
             ]
         )
         return response.choices[0].message["content"].split("\n")
