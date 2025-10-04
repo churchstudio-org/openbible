@@ -1,11 +1,11 @@
 import os
 import time
-import openai
+from openai import OpenAI
 from tqdm import tqdm
 from .base_translator import BaseTranslator
 from scripts.secrets import get_openai_api_key
 
-openai.api_key = get_openai_api_key()
+client = OpenAI(api_key=get_openai_api_key())
 
 # https://platform.openai.com/settings/organization/limits
 RPM_LIMIT = 500
@@ -18,7 +18,7 @@ class OpenAITranslator(BaseTranslator):
 
     def _translate_batch(self, verses):
         prompt = self.prompt + "\n\n" + "\n".join(verses)
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=self.model_name,
             messages=[
                 {"role": "system", "content": "You are a professional translator."},
