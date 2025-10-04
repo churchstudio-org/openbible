@@ -1,9 +1,0 @@
-{
-  "attribution": "OPUS-MT – Building open translation services for the World and The Tatoeba Translation Challenge – Realistic Data Sets for Low Resource and Multilingual MT",
-  "locale": "ko_KR",
-  "model": "Helsinki-NLP/opus-mt-tc-big-en-ko",
-  "source": [
-    "KJV"
-  ],
-  "version": "KJV_HELSINKI_NLP_OPUS_MT_TC_BIG_EN_KO"
-}
