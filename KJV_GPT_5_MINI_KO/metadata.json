@@ -2,6 +2,7 @@
   "attribution": "",
   "locale": "ko_KR",
   "model": "gpt-5-mini",
+  "prompt": "Translate the following Bible verses from the King James Version (archaic English) into modern Korean, preserving theological accuracy and literary reverence. Translate verse by verse, not as a summary.",
   "source": [
     "KJV"
   ],
