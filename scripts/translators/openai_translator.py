@@ -25,7 +25,7 @@ class OpenAITranslator(BaseTranslator):
                 {"role": "user", "content": prompt}
             ]
         )
-        return response.choices[0].message["content"].split("\n")
+        return response.choices[0].message.content.split("\n")
 
     def translate_book(self, book):
         translated_book = []
