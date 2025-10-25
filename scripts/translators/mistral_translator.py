@@ -53,7 +53,7 @@ class MistralTranslator(BaseTranslator):
             chapter_out = []
             for i in range(0, len(chapter), self.batch_size):
                 batch = chapter[i:i + self.batch_size]
-                translated_lines = self._generate_for_batch(batch)
+                translated_lines = self._translate_batch(batch)
                 chapter_out.extend(translated_lines)
             translated_book.append(chapter_out)
         return translated_book
