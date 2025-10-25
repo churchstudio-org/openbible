@@ -1,4 +1,5 @@
 from scripts.translators.helsinki_translator import HelsinkiTranslator
+from scripts.translators.mistral_translator import MistralTranslator
 from scripts.translators.openai_translator import OpenAITranslator
 
 def get_translator(model_name, prompt):
@@ -8,5 +9,7 @@ def get_translator(model_name, prompt):
         return HelsinkiTranslator(model_name)
     elif model_name_lower.startswith("gpt") or "openai" in model_name_lower:
         return OpenAITranslator(model_name, prompt)
+    elif "mistral" in model_name_lower:
+        return MistralTranslator(model_name, prompt)
     else:
         raise ValueError(f"Model not supported: {model_name}")
