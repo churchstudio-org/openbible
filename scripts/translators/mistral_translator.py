@@ -29,8 +29,7 @@ class MistralTranslator(BaseTranslator):
 
     def _translate_batch(self, verses):
         chat = [
-            {"role": "system", "content": "You are a professional translator."},
-            {"role": "system", "content": self.prompt},
+            {"role": "system", "content": f"You are a professional translator. {self.prompt}"},
             {"role": "user", "content": "\n".join(verses)}
         ]
         inputs = self.tokenizer.apply_chat_template(
