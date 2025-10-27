@@ -12,8 +12,8 @@ class MistralTranslator(BaseTranslator):
     def __init__(self, model_name: str, prompt: str):
         self.model_name = model_name
         self.prompt = prompt
-        self.max_new_tokens = 2048
-        self.batch_size = 16
+        self.max_new_tokens = 256
+        self.batch_size = 1
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, use_fast=False)
         if self.tokenizer.pad_token is None:
