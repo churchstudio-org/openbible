@@ -75,5 +75,6 @@ class MistralTranslator(BaseTranslator):
         try:
             del self.model
             torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
         except Exception:
             pass
