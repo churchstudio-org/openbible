@@ -58,7 +58,7 @@ class MistralTranslator(BaseTranslator):
         decoded = re.sub(r'\[INST\].*?\[/INST\]', '', decoded, flags=re.DOTALL)
         decoded = re.sub(r'\n\s*\n', '\n', decoded)
         decoded = re.findall(r'<v>(.*?)</v>', decoded, flags=re.DOTALL)
-        return decoded.splitlines()[0]
+        return decoded[0]
 
     def translate_book(self, book):
         translated_book = []
