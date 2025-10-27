@@ -32,16 +32,26 @@ class MistralTranslator(BaseTranslator):
             {"role": "system", "content": f"You are a professional translator. {self.prompt}"},
             {"role": "user", "content": "\n".join(verses)}
         ]
-        inputs = self.tokenizer.apply_chat_template(
+        prompt = self.tokenizer.apply_chat_template(
             chat,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+        inputs = self.tokenizer(
+            prompt,
             return_tensors="pt",
-            add_generation_prompt=True  # garante que só a resposta seja gerada
+            padding=True,
+            truncation=True
         ).to(device)
+        if self.tokenizer.pad_token_id is None:
+            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         with torch.no_grad():
             outputs = self.model.generate(
-                inputs,
+                input_ids=inputs["input_ids"],
+                attention_mask=inputs["attention_mask"],
+                pad_token_id=self.tokenizer.pad_token_id,
                 max_new_tokens=self.max_new_tokens,
-                do_sample=False  # deterministic; change if you want diversified outputs
+                do_sample=False
             )
         decoded = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         return decoded.splitlines()
