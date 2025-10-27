@@ -13,7 +13,6 @@ class MistralTranslator(BaseTranslator):
         self.model_name = model_name
         self.prompt = prompt
         self.max_new_tokens = 256
-        self.batch_size = 1
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, use_fast=False)
         if self.tokenizer.pad_token is None:
@@ -31,10 +30,10 @@ class MistralTranslator(BaseTranslator):
         self.model.config.pad_token_id = self.tokenizer.pad_token_id
         self.model.eval()
 
-    def _translate_batch(self, verses):
+    def _translate_verse(self, verse):
         chat = [
             {"role": "system", "content": self.prompt},
-            {"role": "user", "content": "\n".join(verses)}
+            {"role": "user", "content": verse}
         ]
         prompt = self.tokenizer.apply_chat_template(
             chat,
@@ -58,15 +57,16 @@ class MistralTranslator(BaseTranslator):
         decoded = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         decoded = re.sub(r'\[INST\].*?\[/INST\]', '', decoded, flags=re.DOTALL)
         decoded = re.sub(r'\n\s*\n', '\n', decoded)
-        return decoded.splitlines()
+        decoded = re.findall(r'<v>(.*?)</v>', decoded, flags=re.DOTALL)
+        return decoded.splitlines()[0]
 
     def translate_book(self, book):
         translated_book = []
         for chapter in tqdm(book, desc=f"Mistral ({self.model_name})", unit="chapter"):
             chapter_out = []
-            for i in range(0, len(chapter), self.batch_size):
-                batch = chapter[i:i + self.batch_size]
-                translated_lines = self._translate_batch(batch)
+            for i in range(0, len(chapter)):
+                verse = chapter[i]
+                translated_lines = self._translate_verse(verse)
                 chapter_out.extend(translated_lines)
             translated_book.append(chapter_out)
         return translated_book
