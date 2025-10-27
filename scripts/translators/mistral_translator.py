@@ -1,3 +1,4 @@
+import re
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from tqdm import tqdm
@@ -55,6 +56,8 @@ class MistralTranslator(BaseTranslator):
                 do_sample=False
             )
         decoded = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        decoded = re.sub(r'\[INST\].*?\[/INST\]', '', decoded, flags=re.DOTALL)
+        decoded = re.sub(r'\n\s*\n', '\n', decoded)
         return decoded.splitlines()
 
     def translate_book(self, book):
