@@ -15,6 +15,8 @@ class MistralTranslator(BaseTranslator):
         self.batch_size = 16
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, use_fast=False)
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
         try:
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_name,
@@ -25,6 +27,7 @@ class MistralTranslator(BaseTranslator):
         except Exception:
             self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
 
+        self.model.config.pad_token_id = self.tokenizer.pad_token_id
         self.model.eval()
 
     def _translate_batch(self, verses):
@@ -43,8 +46,6 @@ class MistralTranslator(BaseTranslator):
             padding=True,
             truncation=True
         ).to(device)
-        if self.tokenizer.pad_token_id is None:
-            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         with torch.no_grad():
             outputs = self.model.generate(
                 input_ids=inputs["input_ids"],
