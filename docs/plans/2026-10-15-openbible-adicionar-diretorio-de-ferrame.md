@@ -189,3 +189,16 @@ Each step is done only when its criterion is met.
 - Translating Bible versions or changing the translation pipeline.
 - Release automation or other CI work from the README roadmap.
 - Migrating the archived repositories' issues, pull requests or other metadata.
+
+## Answers
+
+Recorded by Codeman from `/codeman` commands on the issue.
+
+<!-- codeman:answers:start -->
+- Decision 1 (Forma de importar bible-crawler e bible-dl): (b) cópia simples, sem histórico, chosen by lucaslannes.
+- Decision 2 (Gestão de pacotes dentro de tools/): (a) npm workspaces em tools/ com lockfile único, chosen by lucaslannes.
+- Decision 3 (Profundidade da atualização de dependências): (b) modernização completa (ESLint, gluegun, formatação), chosen by lucaslannes.
+- Decision 4 (Como testar crawlers que leem páginas ao vivo): (b) testes ao vivo dentro da CI, chosen by lucaslannes.
+- Decision 5 (Licenças do código importado): (b) relicenciar ambos como MIT, chosen by lucaslannes.
+- Decision 6 (Idiomas perdidos ao remover o Just1WordCrawler): (a) migrar en_US e ja_JP para o WordProject e manter pt_BR no BibliaLivre, chosen by lucaslannes.
+<!-- codeman:answers:end -->
