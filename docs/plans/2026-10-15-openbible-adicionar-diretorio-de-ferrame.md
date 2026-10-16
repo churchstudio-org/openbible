@@ -1,7 +1,7 @@
 ---
-status: pending
+status: in progress
 created_at: 2026-10-15T00:00:00-03:00
-updated_at: 2026-10-15T00:00:00-03:00
+updated_at: 2026-10-16T00:05:34+00:00
 commit: fd773ed
 ---
 
@@ -202,3 +202,29 @@ Recorded by Codeman from `/codeman` commands on the issue.
 - Decision 5 (Licenças do código importado): (b) relicenciar ambos como MIT, chosen by lucaslannes.
 - Decision 6 (Idiomas perdidos ao remover o Just1WordCrawler): (a) migrar en_US e ja_JP para o WordProject e manter pt_BR no BibliaLivre, chosen by lucaslannes.
 <!-- codeman:answers:end -->
+
+## Progress
+
+### 2026-10-16 — web stage (done)
+
+Recorded the third-party pages the crawlers rely on under `docs/web/`,
+following the third-party documentation rules. Generic tool
+`docs/web/tools/fetch-markdown.md` added; pages were written in the agent's
+own words (none of the sources publish a Markdown copy, and their licenses do
+not authorize full redistribution of the HTML).
+
+- `docs/web/biblia-livre/` (pt_BR source, new Google Sites layout):
+  book-list page, book page with chapter groups (Gênesis), chapter group
+  page, book page with inline verses (Filemom/Lucas/Salmos), and
+  attribution/license (CC BY 3.0 Brasil). Key finding for step 5: some books
+  split their text into `capítulos` group pages while others (Salmos, Lucas,
+  Filemom, ...) hold all verses inline on the book page; the crawler must
+  detect both layouts.
+- `docs/web/wordproject/`: English KJV chapter page (en_US, `/bibles/kj/`),
+  Japanese Bible chapter page (ja_JP, `/bibles/jp/`, Kougo-yaku) and the
+  copyrights page. Confirmed the `.textBody p` single-paragraph verse layout
+  and the commented-out verse-1 span quirk for both languages.
+
+No code was changed. Next: code stage, which may rely on these `docs/web/`
+records to rewrite `BibliaLivreCrawler` (step 5) and to add `en_US`
+(WordProject KJV, step 7).
