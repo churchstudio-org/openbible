@@ -23,7 +23,7 @@ on:
         description: Spending limit per month for this repository, in USD.
         type: string
       max-runs:
-        description: Consecutive runs of a routed stage before a task is blocked.
+        description: Blocks a task when a routed stage's runs in a row without finishing it, or review's rounds in a row asking for changes, reach max-runs (with 3, the 3rd).
         type: string
       # Set when another repository's run formed a batch with this repository's tasks; only
       # logged: select starts the tasks Codeman's store reserved for this repository.
@@ -195,7 +195,7 @@ jobs:
 
   # Starts the Codeman workflow of each repository of the pool whose tasks a batch this run formed
   # reserved, so they join the batch's pod: one leg per repository. Each leg's token is for that
-  # repository alone and may only start workflows (Actions write); it is revoked when its step
+  # repository alone and may only start workflows (Actions write); it is revoked when its job
   # ends. No checkout, no OIDC token, no permission for the job's own token. The target's
   # select starts only what Codeman's store reserved for it.
   dispatch:
@@ -218,6 +218,8 @@ jobs:
           owner: ${{ matrix.owner }}
           repositories: ${{ matrix.repository }}
           permission-actions: write
+          # To read the repository's default branch, which gh starts the workflow on.
+          permission-metadata: read
       - run: |
           busy=$(gh api "repos/$OWNER/$REPOSITORY/actions/concurrency_groups/codeman" \
             --jq '.group_members[] | "\(.status): \(.run_html_url)"' 2>/dev/null) || busy=""
