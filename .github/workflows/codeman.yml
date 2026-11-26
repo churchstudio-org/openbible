@@ -81,7 +81,7 @@ jobs:
         github.event.review.state == 'changes_requested' ||
         contains(github.event.review.body, '/codeman')
       )
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       actions: write
@@ -117,7 +117,7 @@ jobs:
           )
         )
       )
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     permissions:
       # GitHub's OIDC token, which Codeman exchanges for access to its store (Firestore) as the
@@ -170,7 +170,7 @@ jobs:
         id: codeman
         with:
           step: select
-          template-version: 1
+          template-version: 4
           github-token: ${{ steps.app-token.outputs.token }}
           app-slug: ${{ steps.app-token.outputs.app-slug }}
           # Settings an organization shares with its repositories, in the format of
@@ -202,7 +202,7 @@ jobs:
     name: Wake ${{ matrix.owner }}/${{ matrix.repository }}
     needs: select
     if: needs.select.outputs.dispatches != '' && needs.select.outputs.dispatches != '[]'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions: {}
     strategy:
@@ -218,7 +218,7 @@ jobs:
           owner: ${{ matrix.owner }}
           repositories: ${{ matrix.repository }}
           permission-actions: write
-          # To read the repository's default branch, which gh starts the workflow on.
+          # To read the repository's default branch, which the workflow starts on.
           permission-metadata: read
       - run: |
           busy=$(gh api "repos/$OWNER/$REPOSITORY/actions/concurrency_groups/codeman" \
@@ -228,8 +228,10 @@ jobs:
             echo "$busy"
           fi
           # Always Codeman's workflow on the default branch, the only one Workload Identity
-          # admits: given no ref, gh takes the repository's default branch.
-          gh workflow run codeman.yml --repo "$OWNER/$REPOSITORY" -f batch="$BATCHES"
+          # admits. Read through REST, which needs metadata: given no ref, gh would read it
+          # through GraphQL's defaultBranchRef, which this token cannot.
+          branch=$(gh api "repos/$OWNER/$REPOSITORY" --jq .default_branch)
+          gh workflow run codeman.yml --repo "$OWNER/$REPOSITORY" --ref "$branch" -f batch="$BATCHES"
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           OWNER: ${{ matrix.owner }}
@@ -252,6 +254,8 @@ jobs:
     permissions:
       contents: read
       actions: read
+      issues: read
+      pull-requests: read
       id-token: write
     with:
       task: ${{ matrix.task }}
@@ -263,6 +267,7 @@ jobs:
       monthly-budget: ${{ matrix.monthly-budget }}
       organization-monthly-budget: ${{ matrix.organization-monthly-budget }}
       inference: ${{ matrix.inference }}
+      agent-job-minutes: ${{ matrix.agent-job-minutes }}
       ledger-run: ${{ matrix.ledger-run }}
     # Each job of codeman-task.yml uses only the secrets it used here before.
     secrets:
@@ -271,6 +276,7 @@ jobs:
       CODEMAN_KEY_ENCRYPTION_SECRET: ${{ secrets.CODEMAN_KEY_ENCRYPTION_SECRET }}
       CODEMAN_RUNPOD_API_KEY: ${{ secrets.CODEMAN_RUNPOD_API_KEY }}
       CODEMAN_RUNPOD_SERVERLESS_KEY: ${{ secrets.CODEMAN_RUNPOD_SERVERLESS_KEY }}
+      CODEMAN_SALAD_API_KEY: ${{ secrets.CODEMAN_SALAD_API_KEY }}
 
   # Starts another run when this one moved a task, so the next task (or the next step of this
   # one) does not wait for the schedule. That run stops early when nothing can move. No secrets.
@@ -281,7 +287,7 @@ jobs:
     needs: [select, task]
     # always(): the run goes on when a task failed, or only recorded answers.
     if: always() && needs.select.result == 'success' && needs.select.outputs.action != 'none'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       actions: write
