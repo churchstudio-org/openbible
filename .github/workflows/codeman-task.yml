@@ -38,6 +38,10 @@ on:
       inference:
         type: string
         required: true
+      # The agent job's timeout, in minutes, from the settings' agent-minutes and wrap-up-minutes.
+      agent-job-minutes:
+        type: string
+        required: true
       # The run's document in Codeman's ledger; empty for a task without an agent.
       ledger-run:
         type: string
@@ -55,6 +59,8 @@ on:
         required: false
       CODEMAN_RUNPOD_SERVERLESS_KEY:
         required: false
+      CODEMAN_SALAD_API_KEY:
+        required: false
 
 permissions: {}
 
@@ -70,7 +76,7 @@ jobs:
   open-key:
     name: Open key
     if: inputs.needs-agent == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     # A new pod may take up to 25 minutes to serve its model.
     timeout-minutes: 35
     permissions:
@@ -115,18 +121,22 @@ jobs:
         id: codeman
         with:
           step: open-key
-          template-version: 1
+          template-version: 4
           task: ${{ inputs.task }}
           task-budget: ${{ inputs.task-budget }}
           monthly-budget: ${{ inputs.monthly-budget }}
           organization-monthly-budget: ${{ inputs.organization-monthly-budget }}
           inference: ${{ inputs.inference }}
+          agent-job-minutes: ${{ inputs.agent-job-minutes }}
           ledger-run: ${{ inputs.ledger-run }}
           firebase-project: ${{ vars.CODEMAN_FIREBASE_PROJECT }}
           workload-identity-provider: ${{ vars.CODEMAN_WORKLOAD_IDENTITY_PROVIDER }}
           service-account: ${{ vars.CODEMAN_SERVICE_ACCOUNT }}
           management-key: ${{ secrets.CODEMAN_OPENROUTER_MANAGEMENT_KEY }}
           gpu-key: ${{ secrets.CODEMAN_RUNPOD_API_KEY }}
+          salad-key: ${{ secrets.CODEMAN_SALAD_API_KEY }}
+          salad-organization: ${{ vars.CODEMAN_SALAD_ORGANIZATION }}
+          salad-project: ${{ vars.CODEMAN_SALAD_PROJECT }}
           encryption-secret: ${{ secrets.CODEMAN_KEY_ENCRYPTION_SECRET }}
 
   # Runs the agent with read-only access. Its result is an artifact for the apply job, even when
@@ -138,12 +148,17 @@ jobs:
     name: Agent (${{ inputs.stage }})
     needs: open-key
     if: needs.open-key.outputs.status == 'opened'
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+    runs-on: ubuntu-26.04
+    # The settings' agent-minutes and wrap-up-minutes, and 10 minutes for the job's own steps.
+    timeout-minutes: ${{ fromJSON(inputs.agent-job-minutes) }}
     permissions:
       contents: read
       # Downloads the results of workflows the agent asked for. The agent never sees the token.
       actions: read
+      # Download the files maintainers attached to the issue, its comments and its pull request's
+      # reviews, and read their rendered HTML for the signed addresses of a private repository's.
+      issues: read
+      pull-requests: read
     outputs:
       gateway-usage: ${{ steps.codeman.outputs.gateway-usage }}
     steps:
@@ -189,7 +204,7 @@ jobs:
         id: codeman
         with:
           step: agent
-          template-version: 1
+          template-version: 4
           task: ${{ inputs.task }}
           github-token: ${{ github.token }}
           encrypted-key: ${{ needs.open-key.outputs.encrypted-key }}
@@ -199,7 +214,6 @@ jobs:
           context-length: ${{ needs.open-key.outputs.context-length }}
           # The runpod-serverless provider: held by the gateway outside the sandbox.
           serverless-key: ${{ secrets.CODEMAN_RUNPOD_SERVERLESS_KEY }}
-          agent-minutes: 50
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -218,7 +232,7 @@ jobs:
     name: Close key
     needs: [open-key, agent]
     if: always() && (needs.open-key.outputs.handle != '' || needs.open-key.outputs.key-hash != '')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     permissions:
       # Records the run's cost in Codeman's store.
@@ -262,7 +276,7 @@ jobs:
         id: codeman
         with:
           step: close-key
-          template-version: 1
+          template-version: 4
           handle: ${{ needs.open-key.outputs.handle }}
           key-hash: ${{ needs.open-key.outputs.key-hash }}
           inference: ${{ inputs.inference }}
@@ -274,6 +288,9 @@ jobs:
           service-account: ${{ vars.CODEMAN_SERVICE_ACCOUNT }}
           management-key: ${{ secrets.CODEMAN_OPENROUTER_MANAGEMENT_KEY }}
           gpu-key: ${{ secrets.CODEMAN_RUNPOD_API_KEY }}
+          salad-key: ${{ secrets.CODEMAN_SALAD_API_KEY }}
+          salad-organization: ${{ vars.CODEMAN_SALAD_ORGANIZATION }}
+          salad-project: ${{ vars.CODEMAN_SALAD_PROJECT }}
 
   # Validates the result and writes it to GitHub: commits, pull request, labels, status comment.
   # No LLM.
@@ -282,7 +299,7 @@ jobs:
     needs: [open-key, agent, close-key]
     # always(): a run that only records answers has no key or agent.
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     outputs:
       chain: ${{ steps.codeman.outputs.chain }}
@@ -342,7 +359,7 @@ jobs:
         id: codeman
         with:
           step: apply
-          template-version: 1
+          template-version: 4
           task: ${{ inputs.task }}
           github-token: ${{ steps.app-token.outputs.token }}
           workflow-token: ${{ steps.workflow-token.outputs.token }}
@@ -379,7 +396,7 @@ jobs:
     name: Release pod
     needs: [open-key, close-key, apply]
     if: always() && needs.close-key.outputs.kept-pod != '' && needs.apply.outputs.continues != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       # Releases the pod in Codeman's pod registry, and records its end.
@@ -410,7 +427,7 @@ jobs:
       - uses: ./.codeman/action
         with:
           step: release-pod
-          template-version: 1
+          template-version: 4
           handle: ${{ needs.open-key.outputs.handle }}
           inference: ${{ inputs.inference }}
           ledger-run: ${{ inputs.ledger-run }}
@@ -418,3 +435,6 @@ jobs:
           workload-identity-provider: ${{ vars.CODEMAN_WORKLOAD_IDENTITY_PROVIDER }}
           service-account: ${{ vars.CODEMAN_SERVICE_ACCOUNT }}
           gpu-key: ${{ secrets.CODEMAN_RUNPOD_API_KEY }}
+          salad-key: ${{ secrets.CODEMAN_SALAD_API_KEY }}
+          salad-organization: ${{ vars.CODEMAN_SALAD_ORGANIZATION }}
+          salad-project: ${{ vars.CODEMAN_SALAD_PROJECT }}
