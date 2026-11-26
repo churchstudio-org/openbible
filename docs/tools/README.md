@@ -54,6 +54,28 @@ npm run test && npm run lint && npm run build
 `bible-dl`'s scripts already depend on the `bible-crawler` build (`prebuild`,
 `pretest`), so `npm test` on its own is sufficient.
 
+### Live smoke tests
+
+`npm test` also runs the **live crawler smoke tests** against the published
+pages (Bíblia Livre for `pt_BR`; WordProject for `en_US` and `ja_JP`),
+against the committed `BLIVRE/`, `KJV/` and `KOUGO_YAKU/` references. They are
+opt-in and deterministic off by default:
+
+- **Offline (default):** the live tests report as `skipped`; the offline unit
+  tests (fixtures under `tools/*/test/`) are the CI gate. No network access.
+- **Live:** `OPENBIBLE_LIVE=1 npm test` (or `npm test` in the CI job) runs
+  the crawlers against the real sites, with a per-request timeout and bounded
+  retries.
+
+The CI workflow for `tools/` runs the live suite in a **non-blocking** job
+(`continue-on-error`): a page edit or an outage at a third-party site must
+never drop the build. A live failure therefore appears as a visible,
+non-blocking check with the observation and the expected reference in the log;
+the offline unit tests keep asserting the crawlers' parsing behavior against
+captured fixtures (recorded under [`docs/web/`](../web/)). If a live check
+keeps failing, update the fixtures and the `docs/web/` record to match the
+current page before changing the crawlers.
+
 ## Running the CLI
 
 `bible-dl` runs directly from TypeScript via the `tsx` loader, so no build step
