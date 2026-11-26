@@ -1,0 +1,40 @@
+{
+  "name": "bible-crawler",
+  "version": "0.1.0",
+  "description": "A module to read, extract and store Bible text from public web pages.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "test": "node --import tsx --test test/*.test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/churchstudio-org/openbible.git"
+  },
+  "author": "Church Studio",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "node-html-parser": "9.0.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.2",
+    "@types/node": "24.10.1",
+    "eslint": "9.39.2",
+    "prettier": "3.6.2",
+    "tsx": "4.20.3",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.74.0"
+  }
+}

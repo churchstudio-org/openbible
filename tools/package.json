@@ -1,0 +1,20 @@
+{
+  "name": "openbible-tools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenBible tools: bible-crawler and bible-dl, as a single npm workspace.",
+  "workspaces": [
+    "bible-crawler",
+    "bible-dl"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "format": "npm run format --workspaces",
+    "test": "npm run test --workspaces",
+    "check": "npm run build --workspaces && npm run lint --workspaces && npm test --workspaces"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
