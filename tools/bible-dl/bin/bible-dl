@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+'use strict';
+
+// Runs the TypeScript CLI directly on Node, registering the tsx loader with
+// `--import tsx` (the entry point Node runs is the entry point; tsx 4.x
+// requires the `--import` form).
+const { spawn } = require('node:child_process');
+const path = require('node:path');
+
+const cli = path.join(__dirname, '..', 'src', 'bin.ts');
+const args = ['--import', 'tsx', cli, ...process.argv.slice(2)];
+
+const child = spawn(process.execPath, args, { stdio: 'inherit' });
+
+child.on('error', (error) => {
+    console.error(`bible-dl: failed to start the CLI (${error.message})`);
+    process.exit(1);
+});
+
+child.on('exit', (code, signal) => {
+    process.exitCode = signal ? 1 : code ?? 1;
+});

@@ -35,6 +35,23 @@ This means:
 - Model: Helsinki-NLP/opus-mt-tc-big-en-pt
 - Target language: inferred from the model name (en-pt)
 
+## 🛠️ Tools (`tools/`)
+
+OpenBible carries its own command-line tools in a `tools/` npm workspace —
+[`bible-crawler`](tools/bible-crawler) (a library that extracts Bible text
+from public web pages) and [`bible-dl`](tools/bible-dl) (a CLI to download,
+validate, merge and preprocess Bible JSON).
+
+```sh
+cd tools
+npm install
+npm test
+```
+
+See [`docs/tools/README.md`](docs/tools/README.md) for usage and
+[`docs/tools/provenance.md`](docs/tools/provenance.md) for where the code
+came from.
+
 ## 🌍 Generating New Translations
 
 Translations are automated through a Jupyter notebook (.ipynb) that:
